@@ -2,26 +2,133 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard</title>
-    <link rel="stylesheet" href="assets\style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="assets\style.css">
 </head>
 
 <body>
-    <header id="hero" class="titleWeather">Weather Dashboard</header>
-    <div class="searchContainer">
-        <div id="citySearch" class="searchPrompt">Search for a City:</div>
-        <div class="input-group">
-          <input type="text" id="cityInput" placeholder="Enter a city name">
-          <button id="searchButton">Search</button>
-        </div>
-      </div>      
-    <div id="cityName" class="cityClass">City Name</div>
-    <div id="currentDate" class="dateClass">Current Date</div>
-    <i>☀️</i>
-    <div>5-Day Forecast:</div>
-    <script src="assets\script.js"></script>
+  <header id="hero" class="titleWeather">Weather Dashboard</header>
+  <div class="searchContainer">
+    <div id="citySearch" class="searchPrompt">Search for a City:</div>
+    <div class="input-group">
+      <input type="text" id="cityInput" placeholder="Enter a city name">
+      <button id="searchButton">Search</button>
+    </div>
+  </div>
+  <div id="weatherResult" class="weatherResult">
+    <!-- Weather data will be displayed here -->
+  </div>
+
+  <script>
+    // OpenWeatherMap API key
+    var apiKey = '790c21a3a3e4e9fbeed5495456bb6293';
+
+    // Base URL for the OpenWeatherMap API
+    var baseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
+
+    // pulls searchButton (allows this variable to be manipulated using JS like event listeners to trigger the function finding a city), cityInput (this will allows access to get/retrieve the value from the user in the input field), and weatherResult (this will display the data retrieved from the API) ids from the HTML
+    var searchButton = document.getElementById('searchButton');
+    var cityInput = document.getElementById('cityInput');
+    var weatherResult = document.getElementById('weatherResult');
+
+    // this is what happens when the search button is clicked
+    searchButton.addEventListener('click', getWeatherData);
+
+    function getWeatherData() {
+      var city = cityInput.value;
+      var url = `${baseUrl}?q=${city}&appid=${apiKey}`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          // Clear the weatherResult element before adding new data
+          weatherResult.innerHTML = "";
+
+          // Displays weather information
+          weatherResult.innerHTML += `<h2>Weather data for ${city}</h2>`;
+          weatherResult.innerHTML += `<p>City: ${data.city.name}</p>`;
+
+          // Access and display forecast data
+          data.list.forEach(forecast => {
+            var date = forecast.dt_txt;
+            var temperatureKelvin = forecast.main.temp;
+            var humidity = forecast.main.humidity;
+            var windSpeed = forecast.wind.speed;
+            var weatherDescription = forecast.weather[0].description;
+
+            // Convert temperature from Kelvin to Fahrenheit
+            var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+
+            // Get the date (without time) and convert it to a JavaScript Date object
+            var dateParts = date.split(' ');
+            var datePart = dateParts[0];
+            var forecastDate = new Date(datePart);
+
+            // Get the current date (without time)
+            var currentDate = new Date();
+
+            // Check if the forecast date is the same as the current date
+            if (
+              forecastDate.getFullYear() === currentDate.getFullYear() &&
+              forecastDate.getMonth() === currentDate.getMonth() &&
+              forecastDate.getDate() === currentDate.getDate()
+            ) {
+              // Display weather information for the current day
+              weatherResult.innerHTML += `<h2>Current Day's Weather</h2>`;
+              weatherResult.innerHTML += `<p>Date: ${datePart}</p>`;
+              weatherResult.innerHTML += `<p>Temperature: ${temperatureFahrenheit.toFixed(2)}°F</p>`;
+              weatherResult.innerHTML += `<p>Humidity: ${humidity}%</p>`;
+              weatherResult.innerHTML += `<p>Wind Speed: ${windSpeed} m/s</p>`;
+              weatherResult.innerHTML += `<p>Weather: ${weatherDescription}</p>`;
+            }
+          });
+
+          var dailyForecasts = {};
+
+          data.list.forEach(forecast => {
+            var date = forecast.dt_txt;
+            var dateParts = date.split(' ');
+            var datePart = dateParts[0];
+            var forecastDate = new Date(datePart);
+
+            // Group forecasts by date
+            var key = forecastDate.toISOString().split('T')[0];
+            if (!dailyForecasts[key]) {
+              dailyForecasts[key] = [];
+            }
+            dailyForecasts[key].push(forecast);
+          });
+
+          // Display the 5-day forecast
+          for (var key in dailyForecasts) {
+            var dailyForecast = dailyForecasts[key][0]; // Taking the first forecast of the day
+            var date = dailyForecast.dt_txt;
+            var temperatureKelvin = dailyForecast.main.temp;
+
+            // Convert temperature from Kelvin to Fahrenheit
+            var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+
+            var humidity = dailyForecast.main.humidity;
+            var windSpeed = dailyForecast.wind.speed;
+            var weatherDescription = dailyForecast.weather[0].description;
+
+            // Display the forecast data for each day
+            weatherResult.innerHTML += '<h2>' + date + '</h2>';
+            weatherResult.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
+            weatherResult.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
+            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeed + ' m/s</p>';
+            weatherResult.innerHTML += '<p>Weather: ' + weatherDescription + '</p>';
+          }
+        })
+        .catch(error => {
+          // Handle the error and display a message
+          weatherResult.innerHTML = `<p>Failed to retrieve weather data. Error: ${error.message}</p>`;
+        });
+    }
+
+  </script>
 </body>
 
 </html>
