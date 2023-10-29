@@ -28,13 +28,31 @@
     // Base URL for the OpenWeatherMap API
     var baseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
 
-    // pulls searchButton (allows this variable to be manipulated using JS like event listeners to trigger the function finding a city), cityInput (this will allows access to get/retrieve the value from the user in the input field), and weatherResult (this will display the data retrieved from the API) ids from the HTML
+    // Weather icon base URL
+    var iconBaseUrl = 'https://openweathermap.org/img/wn/';
+
+    // pulls searchButton, cityInput, and weatherResult IDs from the HTML
     var searchButton = document.getElementById('searchButton');
     var cityInput = document.getElementById('cityInput');
     var weatherResult = document.getElementById('weatherResult');
 
-    // this is what happens when the search button is clicked
+    // Event listener for the search button
     searchButton.addEventListener('click', getWeatherData);
+
+    function formatDate(date) {
+      var month = (date.getMonth() + 1).toString().padStart(2, '0');
+      var day = date.getDate().toString().padStart(2, '0');
+      var year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+
+    function convertMetersPerSecondToMilesPerHour(windSpeedMs) {
+      return windSpeedMs * 2.23694;
+    }
+
+    function getWeatherIconUrl(iconCode) {
+      return `${iconBaseUrl}${iconCode}@2x.png`;
+    }
 
     function getWeatherData() {
       var city = cityInput.value;
@@ -46,80 +64,74 @@
           // Clear the weatherResult element before adding new data
           weatherResult.innerHTML = "";
 
-          // Displays weather information
+          // Display weather information
           weatherResult.innerHTML += `<h2>Weather data for ${city}</h2>`;
           weatherResult.innerHTML += `<p>City: ${data.city.name}</p>`;
 
-          // Access and display forecast data
-          data.list.forEach(forecast => {
-            var date = forecast.dt_txt;
-            var temperatureKelvin = forecast.main.temp;
-            var humidity = forecast.main.humidity;
-            var windSpeed = forecast.wind.speed;
-            var weatherDescription = forecast.weather[0].description;
+          var currentDate = new Date(); // Get the current date
+
+          // Filter the forecast data for daytime forecasts
+          var daytimeForecasts = data.list.filter(forecast => {
+            var forecastDate = new Date(forecast.dt_txt);
+            var forecastHour = forecastDate.getHours();
+            return forecastHour >= 6 && forecastHour <= 18;
+          });
+
+          if (daytimeForecasts.length > 0) {
+            var currentDayForecast = daytimeForecasts[0]; // Use the first daytime forecast
+            var temperatureKelvin = currentDayForecast.main.temp;
+            var humidity = currentDayForecast.main.humidity;
+            var windSpeed = currentDayForecast.wind.speed;
+            var iconCode = currentDayForecast.weather[0].icon;
 
             // Convert temperature from Kelvin to Fahrenheit
             var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+            var windSpeedMph = convertMetersPerSecondToMilesPerHour(windSpeed);
+            var weatherIconUrl = getWeatherIconUrl(iconCode);
 
-            // Get the date (without time) and convert it to a JavaScript Date object
-            var dateParts = date.split(' ');
-            var datePart = dateParts[0];
-            var forecastDate = new Date(datePart);
-
-            // Get the current date (without time)
-            var currentDate = new Date();
-
-            // Check if the forecast date is the same as the current date
-            if (
-              forecastDate.getFullYear() === currentDate.getFullYear() &&
-              forecastDate.getMonth() === currentDate.getMonth() &&
-              forecastDate.getDate() === currentDate.getDate()
-            ) {
-              // Display weather information for the current day
-              weatherResult.innerHTML += `<h2>Current Day's Weather</h2>`;
-              weatherResult.innerHTML += `<p>Date: ${datePart}</p>`;
-              weatherResult.innerHTML += `<p>Temperature: ${temperatureFahrenheit.toFixed(2)}°F</p>`;
-              weatherResult.innerHTML += `<p>Humidity: ${humidity}%</p>`;
-              weatherResult.innerHTML += `<p>Wind Speed: ${windSpeed} m/s</p>`;
-              weatherResult.innerHTML += `<p>Weather: ${weatherDescription}</p>`;
-            }
-          });
+            // Display weather information for the current day
+            weatherResult.innerHTML += `<h2>Current Day's Weather</h2>`;
+            weatherResult.innerHTML += `<p>Date: ${formatDate(currentDate)}</p>`;
+            weatherResult.innerHTML += `<p>Temperature: ${temperatureFahrenheit.toFixed(2)}°F</p>`;
+            weatherResult.innerHTML += `<p>Humidity: ${humidity}%</p>`;
+            weatherResult.innerHTML += `<p>Wind Speed: ${windSpeedMph.toFixed(2)} mph</p>`;
+            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
+          }
 
           var dailyForecasts = {};
 
-          data.list.forEach(forecast => {
-            var date = forecast.dt_txt;
-            var dateParts = date.split(' ');
-            var datePart = dateParts[0];
-            var forecastDate = new Date(datePart);
+          daytimeForecasts.forEach(forecast => {
+            var date = new Date(forecast.dt_txt);
+            var dateKey = formatDate(date);
 
-            // Group forecasts by date
-            var key = forecastDate.toISOString().split('T')[0];
-            if (!dailyForecasts[key]) {
-              dailyForecasts[key] = [];
+            // Group daytime forecasts by date
+            if (!dailyForecasts[dateKey]) {
+              dailyForecasts[dateKey] = [];
             }
-            dailyForecasts[key].push(forecast);
+            dailyForecasts[dateKey].push(forecast);
           });
 
-          // Display the 5-day forecast
+          // Display the 5-day forecast for daytime forecasts
           for (var key in dailyForecasts) {
-            var dailyForecast = dailyForecasts[key][0]; // Taking the first forecast of the day
-            var date = dailyForecast.dt_txt;
+            var dailyForecast = dailyForecasts[key][0]; // Use the first daytime forecast for each day
+            var date = new Date(key);
             var temperatureKelvin = dailyForecast.main.temp;
+            var windSpeed = dailyForecast.wind.speed;
+            var iconCode = dailyForecast.weather[0].icon;
 
             // Convert temperature from Kelvin to Fahrenheit
             var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+            var windSpeedMph = convertMetersPerSecondToMilesPerHour(windSpeed);
+            var weatherIconUrl = getWeatherIconUrl(iconCode);
 
             var humidity = dailyForecast.main.humidity;
-            var windSpeed = dailyForecast.wind.speed;
-            var weatherDescription = dailyForecast.weather[0].description;
 
             // Display the forecast data for each day
-            weatherResult.innerHTML += '<h2>' + date + '</h2>';
+            weatherResult.innerHTML += '<h2>' + formatDate(date) + '</h2>';
             weatherResult.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
             weatherResult.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
-            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeed + ' m/s</p>';
-            weatherResult.innerHTML += '<p>Weather: ' + weatherDescription + '</p>';
+            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
+            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
           }
         })
         .catch(error => {
@@ -127,7 +139,6 @@
           weatherResult.innerHTML = `<p>Failed to retrieve weather data. Error: ${error.message}</p>`;
         });
     }
-
   </script>
 </body>
 
