@@ -98,6 +98,55 @@
             weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
           }
 
+          //calculates the average temperature, humidty, and windspeed
+          function calculateDailyAverages(forecasts) {
+            var sumTemp = 0;
+            var sumHumidity = 0;
+            var sumWindSpeed = 0;
+
+            forecasts.forEach(forecast => {
+              sumTemp += forecast.main.temp;
+              sumHumidity += forecast.main.humidity;
+              sumWindSpeed += forecast.wind.speed;
+            });
+
+            var averageTemp = sumTemp / forecasts.length;
+            var averageHumidity = sumHumidity / forecasts.length;
+            var averageWindSpeed = sumWindSpeed / forecasts.length;
+
+            return {
+              temperature: averageTemp,
+              humidity: averageHumidity,
+              windSpeed: averageWindSpeed,
+            };
+          }
+
+          // ...
+
+          for (var key in dailyForecasts) {
+            var forecasts = dailyForecasts[key]; // Get all daytime forecasts for the day
+            var date = new Date(key);
+            var dailyAverage = calculateDailyAverages(forecasts);
+            var temperatureKelvin = dailyAverage.temperature;
+            var windSpeed = dailyAverage.windSpeed;
+            var iconCode = forecasts[0].weather[0].icon; // Use the first forecast for the day for the icon
+
+            // Convert temperature from Kelvin to Fahrenheit
+            var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+            var windSpeedMph = convertMetersPerSecondToMilesPerHour(windSpeed);
+            var weatherIconUrl = getWeatherIconUrl(iconCode);
+
+            var humidity = dailyAverage.humidity;
+
+            // Display the average forecast data for each day
+            weatherResult.innerHTML += '<h2>' + formatDate(date) + '</h2>';
+            weatherResult.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
+            weatherResult.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
+            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
+            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
+          }
+
+
           var dailyForecasts = {};
 
           daytimeForecasts.forEach(forecast => {
