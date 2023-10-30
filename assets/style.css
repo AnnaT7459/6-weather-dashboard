@@ -43,6 +43,28 @@ body {
   width: 15%;
 }
 
+/* Add styles for the search history container */
+.searchHistoryContainer {
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-start; 
+}
+
+.city-button {
+  background-color: gray; 
+  color: white; 
+  padding: 5px 10px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.city-button:hover {
+  background-color: blue; 
+}
+
 /* Styles for weather result */
 .weatherResult {
 text-align: center;
