@@ -46,6 +46,7 @@ function addCityButton(city) {
 
 // Function to display the search history
 function displaySearchHistory() {
+    searchHistoryContainer.innerHTML = "";
     searchHistory.forEach(city => {
         addCityButton(city);
     });
