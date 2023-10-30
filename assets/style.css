@@ -9,7 +9,7 @@ body {
 /* Header styles */
 #hero {
   background-color: navy; 
-  color: #fff; /* White text */
+  color: #fff; 
   text-align: center;
   padding: 20px;
 }
@@ -21,45 +21,93 @@ body {
 
 /* Input and button styles within the search container */
 .input-group {
-  text-align: left; /* Align text to the left within the block */
+  text-align: left; 
+  /* Aligns text to the left within the block */
 }
 
 #cityInput {
   padding: 5px;
   width: 15%; 
-  margin-bottom: 10px; /* Added some spacing between input and button */
+  margin-bottom: 10px; 
+  /* Added some spacing between input and button */
 }
 
 #searchButton {
   background-color: #3498db; 
-  color: #fff; /* White text */
+  color: #fff; 
   border: none;
   padding: 5px 15px;
   cursor: pointer;
-  display: block; /* Displays the button as a block element to appear underneath the input */
+  /* Displays the button as a block element to appear underneath the input */
+  display: block; 
   width: 15%;
 }
 
-/* Weather result styles */
+/* Styles for weather result */
 .weatherResult {
-  background-color: #fff; /* White background */
-  padding: 20px;
-  margin: 20px;
-  border-radius: 5px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+text-align: center;
 }
 
-/* City name and current date styles */
-.cityClass, .dateClass {
-  font-weight: bold;
+.current-day {
+  background-color: lightblue;
+  padding: 10px;
+  border: 1px solid navy;
+  text-align: center;
+}
+
+.current-day h2 {
+  font-size: 20px;
+}
+
+.current-day p {
+  font-size: 16px;
+}
+
+.current-day img {
+  max-width: 100px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Styles for the 5-day forecast container */
+#fiveDayForecastContainer {
+  /* arranges items in a row */
+  display: flex; 
+  /* Adds space between items */
+  justify-content: space-around; 
+  /* Wraps items to the next row if they overflow */
+  flex-wrap: wrap; 
+}
+
+/* Styles for each day's forecast */
+.day-forecast {
+  background-color: navy;
+  padding: 10px;
+  border: 1px lightblue;
+  text-align: center;
+  /* Distributes available space equally */
+  flex: 1; 
+  max-width: 150px; 
+  margin: 10px; 
+}
+
+.day-forecast h2 {
+  font-size: 20px;
+  color: white;
+}
+
+.day-forecast p {
+  font-size: 16px;
+  color: white
+}
+
+.day-forecast img {
+  max-width: 100px;
+  display: block;
+  margin: 0 auto;
 }
 
 /* Icon styles */
 i {
   font-size: 24px;
-}
-
-/* 5-Day forecast title styles */
-h2 {
-  margin-top: 20px;
 }

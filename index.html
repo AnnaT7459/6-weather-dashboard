@@ -18,7 +18,13 @@
     </div>
   </div>
   <div id="weatherResult" class="weatherResult">
-    <!-- Weather data will be displayed here -->
+    <!-- original way to display data - won't display the current/5 day without it - will debug in future -->
+    </div>
+  <div id="currentDayWeatherContainer">
+    <!-- Current day's weather content will be added here dynamically -->
+  </div>
+  <div id="fiveDayForecastContainer">
+    <!-- 5-day forecast content will be added here dynamically -->
   </div>
 
   <script>
@@ -78,7 +84,7 @@
           });
 
           if (daytimeForecasts.length > 0) {
-            var currentDayForecast = daytimeForecasts[0]; // Use the first daytime forecast
+            var currentDayForecast = daytimeForecasts[0];
             var temperatureKelvin = currentDayForecast.main.temp;
             var humidity = currentDayForecast.main.humidity;
             var windSpeed = currentDayForecast.wind.speed;
@@ -90,12 +96,33 @@
             var weatherIconUrl = getWeatherIconUrl(iconCode);
 
             // Display weather information for the current day
-            weatherResult.innerHTML += `<h2>Current Day's Weather</h2>`;
-            weatherResult.innerHTML += `<p>Date: ${formatDate(currentDate)}</p>`;
-            weatherResult.innerHTML += `<p>Temperature: ${temperatureFahrenheit.toFixed(2)}°F</p>`;
-            weatherResult.innerHTML += `<p>Humidity: ${humidity}%</p>`;
-            weatherResult.innerHTML += `<p>Wind Speed: ${windSpeedMph.toFixed(2)} mph</p>`;
-            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
+            // Assuming you have already retrieved and processed the current day's weather data
+
+            // Gets reference to the container div
+            var currentDayWeatherContainer = document.getElementById('currentDayWeatherContainer');
+
+            // Created a new div element to display the current day's weather
+            var currentDayWeatherDiv = document.createElement('div');
+            currentDayWeatherDiv.className = 'current-day';
+
+            // Set the content for the current day's weather div
+            currentDayWeatherDiv.innerHTML = '<h2>Current Day\'s Weather</h2>';
+            currentDayWeatherDiv.innerHTML += '<p>Date: ' + formatDate(currentDate) + '</p>';
+            currentDayWeatherDiv.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
+            currentDayWeatherDiv.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
+            currentDayWeatherDiv.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
+
+            // Create an image element for the weather icon
+            var weatherIcon = document.createElement('img');
+            weatherIcon.className = 'current-day-icon'; 
+            weatherIcon.src = weatherIconUrl;
+            weatherIcon.alt = 'Weather Icon';
+
+            // Append the weather icon to the current day's weather div
+            currentDayWeatherDiv.appendChild(weatherIcon);
+
+            // Append the current day's weather div to the container
+            currentDayWeatherContainer.appendChild(currentDayWeatherDiv);
           }
 
           //calculates the average temperature, humidty, and windspeed
@@ -121,31 +148,21 @@
             };
           }
 
-          // ...
-
           for (var key in dailyForecasts) {
-            var forecasts = dailyForecasts[key]; // Get all daytime forecasts for the day
+            // All daytime forecasts for the day
+            var forecasts = dailyForecasts[key];
             var date = new Date(key);
             var dailyAverage = calculateDailyAverages(forecasts);
-            var temperatureKelvin = dailyAverage.temperature;
-            var windSpeed = dailyAverage.windSpeed;
-            var iconCode = forecasts[0].weather[0].icon; // Use the first forecast for the day for the icon
 
-            // Convert temperature from Kelvin to Fahrenheit
+            // Converts temperature from Kelvin to Fahrenheit
+            var temperatureKelvin = dailyAverage.temperature;
             var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
+
+            var windSpeed = dailyAverage.windSpeed;
             var windSpeedMph = convertMetersPerSecondToMilesPerHour(windSpeed);
-            var weatherIconUrl = getWeatherIconUrl(iconCode);
 
             var humidity = dailyAverage.humidity;
-
-            // Display the average forecast data for each day
-            weatherResult.innerHTML += '<h2>' + formatDate(date) + '</h2>';
-            weatherResult.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
-            weatherResult.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
-            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
-            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
           }
-
 
           var dailyForecasts = {};
 
@@ -153,38 +170,49 @@
             var date = new Date(forecast.dt_txt);
             var dateKey = formatDate(date);
 
-            // Group daytime forecasts by date
+            // Groups daytime forecasts by date
             if (!dailyForecasts[dateKey]) {
               dailyForecasts[dateKey] = [];
             }
             dailyForecasts[dateKey].push(forecast);
           });
 
-          // Display the 5-day forecast for daytime forecasts
+          // Displays the 5-day forecast for daytime forecasts
+          // Clear the fiveDayForecastContainer before adding new data
+          document.getElementById('fiveDayForecastContainer').innerHTML = "";
+
+          // Displays the 5-day forecast for daytime forecasts
           for (var key in dailyForecasts) {
-            var dailyForecast = dailyForecasts[key][0]; // Use the first daytime forecast for each day
+            var dailyForecast = dailyForecasts[key][0];
             var date = new Date(key);
             var temperatureKelvin = dailyForecast.main.temp;
             var windSpeed = dailyForecast.wind.speed;
             var iconCode = dailyForecast.weather[0].icon;
 
-            // Convert temperature from Kelvin to Fahrenheit
+            // Converts temperature from Kelvin to Fahrenheit
             var temperatureFahrenheit = (temperatureKelvin - 273.15) * 9 / 5 + 32;
             var windSpeedMph = convertMetersPerSecondToMilesPerHour(windSpeed);
             var weatherIconUrl = getWeatherIconUrl(iconCode);
 
             var humidity = dailyForecast.main.humidity;
 
-            // Display the forecast data for each day
-            weatherResult.innerHTML += '<h2>' + formatDate(date) + '</h2>';
-            weatherResult.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
-            weatherResult.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
-            weatherResult.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
-            weatherResult.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
+            // Created a new div element for each day's forecast
+            var dayForecastDiv = document.createElement('div');
+            dayForecastDiv.className = 'day-forecast';
+
+            // Sets the content for the day's forecast div
+            dayForecastDiv.innerHTML = '<h2>' + formatDate(date) + '</h2>';
+            dayForecastDiv.innerHTML += '<p>Temperature: ' + temperatureFahrenheit.toFixed(2) + '°F</p>';
+            dayForecastDiv.innerHTML += '<p>Humidity: ' + humidity + '%</p>';
+            dayForecastDiv.innerHTML += '<p>Wind Speed: ' + windSpeedMph.toFixed(2) + ' mph</p>';
+            dayForecastDiv.innerHTML += `<img src="${weatherIconUrl}" alt="Weather Icon">`;
+
+            // Appends the day's forecast div to the fiveDayForecastContainer
+            document.getElementById('fiveDayForecastContainer').appendChild(dayForecastDiv);
           }
         })
         .catch(error => {
-          // Handle the error and display a message
+          // Handles the error and display a message
           weatherResult.innerHTML = `<p>Failed to retrieve weather data. Error: ${error.message}</p>`;
         });
     }
